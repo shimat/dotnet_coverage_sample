@@ -39,10 +39,10 @@ jobs:
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_html" -reporttypes:Html
-        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_csv" -reporttypes:CsvSUmmary
+        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_text" -reporttypes:TextSUmmary
        
         echo "SUMMARY<<EOF" >> $GITHUB_ENV
-        echo "$(cat report_csv/Summary.csv)" >> $GITHUB_ENV
+        echo "$(cat report_text/Summary.txt)" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         
     - uses: actions/upload-artifact@v3
