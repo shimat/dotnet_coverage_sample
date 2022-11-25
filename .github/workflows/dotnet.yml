@@ -39,10 +39,10 @@ jobs:
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_html" -reporttypes:Html
-        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_text" -reporttypes:TextSUmmary
+        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_markdown" -reporttypes:MarkdownSUmmary
        
         echo "SUMMARY<<EOF" >> $GITHUB_ENV
-        echo "$(cat report_text/Summary.txt)" >> $GITHUB_ENV
+        echo "$(cat report_markdown/Summary.md)" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         
     - uses: actions/upload-artifact@v3
@@ -69,9 +69,7 @@ jobs:
           const output = `#### dotnet test 🤖\`${{ steps.test.outcome }}\`
           <details><summary>Show coverage summary</summary>
           
-          \`\`\`\n
           ${{ env.SUMMARY }}
-          \`\`\`
           
           </details>`;
           // 3. If we have a comment, update it, otherwise create a new one
