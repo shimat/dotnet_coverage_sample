@@ -67,7 +67,7 @@ jobs:
           })
           // 2. Prepare format of the comment
           const output = `#### dotnet test 🤖\`${{ steps.test.outcome }}\`
-          <details><summary>Show details</summary>
+          <details><summary>Show coverage summary</summary>
           
           \`\`\`\n
           ${{ env.SUMMARY }}
