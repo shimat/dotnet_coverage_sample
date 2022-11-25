@@ -53,8 +53,6 @@ jobs:
     - name: Comment
       uses: actions/github-script@v6
       if: ${{ github.event_name == 'pull_request' }}
-      #env:
-      #  SUMMARY: "${{ steps.generate_report.outputs.summary }}"
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -65,10 +63,10 @@ jobs:
             issue_number: context.issue.number,
           })
           const botComment = comments.find(comment => {
-            return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style') && comment.body.includes('${{ matrix.dir }}/${{ matrix.env }}')
+            return comment.user.type === 'Bot' && comment.body.includes('dotnet test 🤖')
           })
           // 2. Prepare format of the comment
-          const output = `#### Test 🤖\`${{ steps.test.outcome }}\`
+          const output = `#### dotnet test 🤖\`${{ steps.test.outcome }}\`
           <details><summary>Show details</summary>
           
           \`\`\`\n
