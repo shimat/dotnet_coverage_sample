@@ -1,0 +1,85 @@
+name: .NET
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 6.0.x
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+    - name: Test
+      id: test
+      run: dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage"
+
+    - name: Find coverage output path
+      run: |
+        f=$(find . -name "coverage.cobertura.xml")
+        cp $f .
+                
+    - name: Run ReportGenerator 
+      id: generate_report
+      run: |
+        dotnet tool install -g dotnet-reportgenerator-globaltool
+        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_html" -reporttypes:Html
+        reportgenerator -reports:"coverage.cobertura.xml" -targetdir:"report_csv" -reporttypes:CsvSUmmary
+        echo "summary=$(cat report_csv/Summary.csv)" >> $GITHUB_OUTPUT
+        
+    - name: Comment
+      uses: actions/github-script@v6
+      if: ${{ github.event_name == 'pull_request' }}
+      env:
+        SUMMARY: "${{ steps.generate_report.outputs.summary }}"
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          // 1. Retrieve existing bot comments for the PR
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          })
+          const botComment = comments.find(comment => {
+            return comment.user.type === 'Bot' && comment.body.includes('Terraform Format and Style') && comment.body.includes('${{ matrix.dir }}/${{ matrix.env }}')
+          })
+          // 2. Prepare format of the comment
+          const output = `#### Test 🤖\`${{ steps.test.outcome }}\`
+          #### Coverage 📖\`${{ steps.generate_report.outcome }}\`
+          <details><summary>Show details</summary>
+          \`\`\`\n
+          ${process.env.SUMMARY}
+          \`\`\`
+          </details>`;
+          // 3. If we have a comment, update it, otherwise create a new one
+          if (botComment) {
+            github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: output
+            })
+          } else {
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            })
+          }
