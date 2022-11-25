@@ -45,6 +45,11 @@ jobs:
         echo "$(cat report_csv/Summary.csv)" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
         
+    - uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report-html
+        path: report_html/ 
+        
     - name: Comment
       uses: actions/github-script@v6
       if: ${{ github.event_name == 'pull_request' }}
@@ -64,11 +69,12 @@ jobs:
           })
           // 2. Prepare format of the comment
           const output = `#### Test 🤖\`${{ steps.test.outcome }}\`
-          #### Coverage 📖\`${{ steps.generate_report.outcome }}\`
           <details><summary>Show details</summary>
+          
           \`\`\`\n
           ${{ env.SUMMARY }}
           \`\`\`
+          
           </details>`;
           // 3. If we have a comment, update it, otherwise create a new one
           if (botComment) {
