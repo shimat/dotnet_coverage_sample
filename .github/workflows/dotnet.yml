@@ -31,8 +31,7 @@ jobs:
 
     - name: Find coverage output path
       run: |
-        f=$(find . -name "coverage.cobertura.xml")
-        cp $f .
+        cp $(find . -name "coverage.cobertura.xml") .
                 
     - name: Run ReportGenerator 
       id: generate_report
